@@ -1,0 +1,21 @@
+Column1,Column2,Correlation,P_value,Significance
+Acousticness,Popularity,-0.16589369041845262,0.0,Significant
+Duration_ms,Popularity,-0.15399315891181284,0.0,Significant
+energy,Popularity,0.15248208099437385,0.0,Significant
+Loudness,Popularity,0.24819005210591485,0.0,Significant
+Speechiness,Popularity,-0.27416947038327105,0.0,Significant
+Likes,Popularity,0.28991624648562675,0.0,Significant
+Stream,Popularity,0.2928161669858548,0.0,Significant
+Danceability,Popularity,0.11603385786375454,3.395319864547144e-291,Significant
+Views,Popularity,0.260406675056087,6.03988636307141e-269,Significant
+Time_signature,Popularity,0.11628466486957,2.859775863414243e-255,Significant
+Instrumentalness,Popularity,-0.0804722947253466,1.1954470686394449e-140,Significant
+Tempo,Popularity,0.07441880216469839,1.6193772635373482e-120,Significant
+Comments,Popularity,0.15058681843981223,9.157293667398064e-89,Significant
+Liveness,Popularity,-0.0489929579362286,3.247164523165819e-53,Significant
+Energy,Popularity,0.11474560259461968,2.538898951377698e-52,Significant
+Valence,Popularity,0.05435978030803675,6.355075606626743e-13,Significant
+Word Counts,Popularity,0.03831517810486524,0.004088621564450415,Significant
+Key,Popularity,0.003734745895994127,0.24205523337003787,Not Significant
+Year,Popularity,-0.01407080251472062,0.2918393171047221,Not Significant
+Unique Word Counts,Popularity,0.006039466470777731,0.6509662734998072,Not Significant

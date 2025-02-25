@@ -28,20 +28,24 @@ from math import floor
     return popularity
 """
 
+
 def log_popularity(views, likes):
     # Apply logarithmic scaling to views and likes
     log_views = np.log1p(views)  # log1p ensures that log(0) is handled
     log_likes = np.log1p(likes)
-    
+
     # Combine them (e.g., average of log-transformed values)
     combined_log = [(lv + ll) / 2 for lv, ll in zip(log_views, log_likes)]
-    
+
     # Normalize the combined log scores to a range between 5 and 95
     min_log = np.min(combined_log)
     max_log = np.max(combined_log)
-    popularity = [(95 - 5) * (score - min_log) / (max_log - min_log) + 5 for score in combined_log]
+    popularity = [
+        (95 - 5) * (score - min_log) / (max_log - min_log) + 5 for score in combined_log
+    ]
     popularity = [floor(score) for score in popularity]
     return popularity
+
 
 # Function to read the CSV, calculate popularity, remove description column, and save the updated CSV
 def add_popularity_column(input_file, output_file, weight_views=0.3, weight_likes=0.7):
@@ -49,34 +53,39 @@ def add_popularity_column(input_file, output_file, weight_views=0.3, weight_like
     df = pd.read_csv(input_file)
 
     # Drop rows where both Views and Likes are missing or NaN
-    df = df.dropna(subset=['Views', 'Likes'], how='all')
+    df = df.dropna(subset=["Views", "Likes"], how="all")
 
     # Set Likes = 0 if Views is present but Likes is missing
-    df['Likes'] = df.apply(lambda row: 0 if pd.isna(row['Likes']) else row['Likes'], axis=1)
-    
+    df["Likes"] = df.apply(
+        lambda row: 0 if pd.isna(row["Likes"]) else row["Likes"], axis=1
+    )
+
     # Set Views = Likes if only Likes is present (i.e., Views is missing)
-    df['Views'] = df.apply(lambda row: row['Likes'] if pd.isna(row['Views']) else row['Views'], axis=1)
+    df["Views"] = df.apply(
+        lambda row: row["Likes"] if pd.isna(row["Views"]) else row["Views"], axis=1
+    )
 
     # Drop the 'Description' column if it exists
-    if 'Description' in df.columns:
-        df = df.drop(columns=['Description'])
-    
+    if "Description" in df.columns:
+        df = df.drop(columns=["Description"])
+
     # Extract Views and Likes columns
-    views = df['Views'].tolist()
-    likes = df['Likes'].tolist()
+    views = df["Views"].tolist()
+    likes = df["Likes"].tolist()
 
     # Calculate the popularity score
     popularity_scores = log_popularity(views, likes)
-    
+
     # Add popularity as a new column to the dataframe
-    df['Popularity'] = popularity_scores
-    
+    df["Popularity"] = popularity_scores
+
     # Save the updated dataframe to a new CSV file
     df.to_csv(output_file, index=False)
 
+
 # Example usage
-input_file = 'C:/Users/Karmanya Pandey/Desktop/UCSD/Winter Quarter 24/ECE 143/Project/data_files/new_data4.csv'  # Your input CSV file name
-output_file = 'C:/Users/Karmanya Pandey/Desktop/UCSD/Winter Quarter 24/ECE 143/Project/data_files/new_data4_updated.csv'  # New CSV file with the popularity column
+input_file = "C:/Users/Karmanya Pandey/Desktop/UCSD/Winter Quarter 24/ECE 143/Project/data_files/new_data4.csv"  # Your input CSV file name
+output_file = "C:/Users/Karmanya Pandey/Desktop/UCSD/Winter Quarter 24/ECE 143/Project/data_files/new_data4_updated.csv"  # New CSV file with the popularity column
 
 # Call the function to add the popularity column
 add_popularity_column(input_file, output_file)
