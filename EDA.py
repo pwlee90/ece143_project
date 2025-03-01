@@ -168,10 +168,10 @@ def K_means_cluster(df : pd.DataFrame, column : str, K:int):
         raise ValueError(f"Column '{column}' not found in DataFrame")
     
     kmeans = KMeans(n_clusters=K)
-    df[f'{column} Cluster'] = kmeans.fit_predict(df[[column]])
+    df[f'{column}_cluster'] = kmeans.fit_predict(df[[column]])
        
     for cluster in range(K):
-        feature_cluster = df[column].where(df[f'{column} Cluster'] == cluster)
+        feature_cluster = df[column].where(df[f'{column}_cluster'] == cluster)
         feature_cluster.plot(kind='kde')
     plt.show()
 
@@ -201,7 +201,7 @@ def cluster_data(df:pd.DataFrame, column:str, K_range:tuple=(3,10)) -> None:
 
     # First, we will examine the distribution of the column using a kernel density plot
     df[column].describe().to_csv(f"{data_dir}/{column}_stats.csv")
-    df[column].plot(kind='kde', title='{column} Distribution', legend=True)
+    df[column].plot(kind='kde', title=f'{column} Distribution', legend=True)
     plt.show()
     plt.savefig(f"{plot_dir}/{column}_distribution.png")
 
@@ -228,6 +228,14 @@ def determine_null_counts(df):
     return null_proportions  # Return the DataFrame for inspection
         
 if __name__ == "__main__":
-    spotgen = pd.read_csv("data/spotgen.csv")
+    data = pd.read_csv("data/cleaned_data.csv")
+
+    # Cluster data according to popularity and view the distribution of the popularity column
+    cluster_data(data, 'popularity', (0,0))
+
+    # Generate correlation plots between popularity and other columns
+    compute_raw_correlation(data, "popularity")
+
+    
 
 
