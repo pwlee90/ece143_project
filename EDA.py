@@ -25,7 +25,7 @@ CorrelationResult = namedtuple(
 """ Named tuple to store correlation results between two columns. """
 
 
-def compute_correlation(df, col1, col2):
+def compute_correlation(df : pd.DataFrame, col1 : str, col2 : str):
     """
     Computes and returns the Pearson correlation coefficient and its p-value.
     """
@@ -59,11 +59,6 @@ def is_significant(p_value, alpha=0.05):
     """
     significance = "Significant" if p_value < alpha else "Not Significant"
     return significance
-
-
-import os
-import pandas as pd
-import matplotlib.pyplot as plt
 
 def generate_correlation_plot(df: pd.DataFrame, corr_result, output_dir, hue=None):
     """
@@ -116,10 +111,11 @@ def generate_correlation_plot(df: pd.DataFrame, corr_result, output_dir, hue=Non
     plt.close()
 
 
-def compute_raw_correlation(df, ref_column, hue=None):
+def compute_raw_correlation(df : pd.DataFrame, ref_column : str, hue=None) -> pd.DataFrame:
     """
     Given a DataFrame, this function computes the correlation between the popularity and all other columns in the dataset.
     It saves the correlation results in a CSV file and generates and saves hexbin plots for each correlation.
+    It returns the correlation results as a DataFrame.
     """
     # Load the combined data
     combined_data = df
@@ -164,10 +160,13 @@ def compute_raw_correlation(df, ref_column, hue=None):
 
     return correlation_df
 
-def K_means_cluster(df, column, K):
+def K_means_cluster(df : pd.DataFrame, column : str, K:int):
     """
     Performs a K-means clustering of a column in a provided DataFrame
     """
+    if column not in df.columns:
+        raise ValueError(f"Column '{column}' not found in DataFrame")
+    
     kmeans = KMeans(n_clusters=K)
     df[f'{column} Cluster'] = kmeans.fit_predict(df[[column]])
        
