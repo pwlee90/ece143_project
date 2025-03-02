@@ -76,16 +76,27 @@ def generate_correlation_plot(df: pd.DataFrame, corr_result, output_dir, hue=Non
         for i, val in enumerate(hue_values):
             subset = df[df[hue] == val]  # Filter dataset by hue category
             
+            # Generate hexbin plot for each hue category
             hb = ax.hexbin(
                 subset[corr_result.Column1], 
                 subset[corr_result.Column2], 
                 gridsize=30, 
                 mincnt=1, 
-                alpha=0.5,  # Transparency for overlap visibility
-                edgecolors="none",  # Removes hex edges
+                alpha=0.5, 
+                edgecolors="none",
             )
-            # Manually set color
-            hb.set_facecolor(colors(i))  # Assign a color from colormap
+            
+            # Compute cluster center and standard deviation
+            center_x = subset[corr_result.Column1].mean()
+            center_y = subset[corr_result.Column2].mean()
+            std_x = subset[corr_result.Column1].std()
+            std_y = subset[corr_result.Column2].std()
+
+            ax.errorbar(center_x, center_y, xerr=std_x, yerr=std_y, fmt="o", color=colors(i), label=f"Cluster {val} Mean")
+
+        plt.colorbar(hb, ax=ax).set_label("Count in bin")
+        ax.legend()
+
     else:
         hb = ax.hexbin(
             df[corr_result.Column1], df[corr_result.Column2], 
@@ -111,23 +122,23 @@ def generate_correlation_plot(df: pd.DataFrame, corr_result, output_dir, hue=Non
     plt.close()
 
 
-def compute_raw_correlation(df : pd.DataFrame, ref_column : str, hue=None) -> pd.DataFrame:
+def report_correlations(df : pd.DataFrame, ref_column : str, hue=None) -> pd.DataFrame:
     """
     Given a DataFrame, this function computes the correlation between the popularity and all other columns in the dataset.
     It saves the correlation results in a CSV file and generates and saves hexbin plots for each correlation.
     It returns the correlation results as a DataFrame.
     """
     # Load the combined data
-    combined_data = df
+    df
 
     # Collect numerical correlation results
-    numeric_columns = combined_data.select_dtypes(include=["number"]).columns
+    numeric_columns = df.select_dtypes(include=["number"]).columns
     correlation_results = []
 
     for col in numeric_columns:
         if col != ref_column:  # Avoid self-correlation
             print("Processing:", col)
-            corr, p_value = compute_correlation(combined_data, col, ref_column)
+            corr, p_value = compute_correlation(df, col, ref_column)
 
             if corr is not None:
                 alpha = 0.05  # Significance level
@@ -155,7 +166,7 @@ def compute_raw_correlation(df : pd.DataFrame, ref_column : str, hue=None) -> pd
     # Plot and save hexbin
     plot_dir = setup_output_dir("eda_plots/correlation_plots")
     for corr_result in correlation_results:
-        generate_correlation_plot(combined_data, corr_result, plot_dir, hue)
+        generate_correlation_plot(df, corr_result, plot_dir, hue)
     print(f"Plots saved in {plot_dir}/")
 
     return correlation_df
@@ -175,26 +186,15 @@ def K_means_cluster(df : pd.DataFrame, column : str, K:int):
         feature_cluster.plot(kind='kde')
     plt.show()
 
-
-def DBSCAN_cluster(df, column):
-    """
-    Performs a density-based clustering of a column in a provided DataFrame
-    """
-    dbscan = DBSCAN(eps=5) 
-    df[f'{column} Cluster'] = dbscan.fit_predict(df[[column]])
-    print("Done predicting")
-       
-    for cluster in df['f{column} Cluster'].unique_values:
-        feature_cluster = df[column].where(df[f'{column} Cluster'] == cluster)
-        feature_cluster.plot(kind='kde')
-    plt.show()
-
-def cluster_data(df:pd.DataFrame, column:str, K_range:tuple=(3,10)) -> None:
+def cluster_data(df:pd.DataFrame, column:str) -> None:
     """
     Cluster data according to a give column in the dataframe.
     Attempts to perform k-means clustering for each k value in K_range (low inclusive, high-non inclusive)
     Saves a kde plot of the distribution to eda_plots
     """
+    if column not in df.columns:
+        raise ValueError(f"{column} not found in DataFrame")
+
     # Create output directories
     plot_dir = setup_output_dir(f"eda_plots/{column}_clustering")
     data_dir = setup_output_dir("eda_data")
@@ -202,21 +202,30 @@ def cluster_data(df:pd.DataFrame, column:str, K_range:tuple=(3,10)) -> None:
     # First, we will examine the distribution of the column using a kernel density plot
     df[column].describe().to_csv(f"{data_dir}/{column}_stats.csv")
     df[column].plot(kind='kde', title=f'{column} Distribution', legend=True)
+
+    # Next, we will segment the dataset int 10 clusters space out by 0.5 * standard deviation
+    mean_popularity = df[column].mean()
+    std_popularity = df[column].std()
+    df[f'{column}_cluster'] = pd.cut(df[column], 
+                                    bins=[-float('inf'),
+                                        mean_popularity - 2 * std_popularity,
+                                        mean_popularity - 1.5 * std_popularity,
+                                        mean_popularity - 1 * std_popularity,
+                                        mean_popularity - 0.5 * std_popularity,
+                                        mean_popularity,
+                                        mean_popularity + 0.5 * std_popularity,
+                                        mean_popularity + 1 * std_popularity,
+                                        mean_popularity + 1.5 * std_popularity,
+                                        mean_popularity + 2 * std_popularity,
+                                        float('inf')
+                                        ],
+                                    labels=range(1,11))
+
+    # Plot the segmented datasets
+    sns.histplot(data=df, x=column, hue=f"{column}_cluster")
     plt.show()
     plt.savefig(f"{plot_dir}/{column}_distribution.png")
 
-    mean_popularity = df['popularity'].mean()
-    std_popularity = df['popularity'].std()
-
-    df['popularity_segment'] = pd.cut(df['popularity'], 
-                                    bins=[-float('inf'), mean_popularity - std_popularity, 
-                                            mean_popularity + std_popularity, float('inf')],
-                                    labels=['Low', 'Average', 'High'])
-
-   
-    # DBSCAN_cluster(df, column)
-    for k in range(K_range[0], K_range[1]):
-        K_means_cluster(df, column, k)
 
 def determine_null_counts(df):
     """
@@ -225,16 +234,16 @@ def determine_null_counts(df):
     """
     null_proportions = df.isna().mean()
 
-    return null_proportions  # Return the DataFrame for inspection
+    return null_proportions
         
 if __name__ == "__main__":
     data = pd.read_csv("data/cleaned_data.csv")
 
     # Cluster data according to popularity and view the distribution of the popularity column
-    cluster_data(data, 'popularity', (0,0))
+    cluster_data(data, 'popularity')
 
     # Generate correlation plots between popularity and other columns
-    compute_raw_correlation(data, "popularity")
+    report_correlations(data, 'popularity', hue='popularity_cluster')
 
     
 
