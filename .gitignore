@@ -2,4 +2,6 @@
 __pychache__/
 venv/
 data/
+eda_plots/
+eda_data/
 .vscode/
