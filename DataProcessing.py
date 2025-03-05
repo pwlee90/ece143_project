@@ -117,7 +117,11 @@ def format_genres(df: pd.DataFrame) -> pd.DataFrame:
         return df
 
     df["genres"] = df["genres"].apply(
-        lambda genre_string: ast.literal_eval(genre_string) if ast.literal_eval(genre_string) != [''] else []    
+        lambda genre_string: (
+            ast.literal_eval(genre_string)
+            if ast.literal_eval(genre_string) != [""]
+            else []
+        )
     )
     return df
 
