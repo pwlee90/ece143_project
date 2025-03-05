@@ -2,11 +2,6 @@
 This file is where we conducted our EDA. For our EDA, we load in the combined data file and
 then we calculate the correlation between the popularity and the other columns.
 
-These correlation results are saved in a CSV file in the folder eda_data.
-
-We then plot the relationship between the popularity and the other columns using hexbin plots. We then save
-these plots in the folder eda_plots.
-
 Author: Henri Schulz
 """
 
@@ -18,6 +13,18 @@ from collections import namedtuple
 from sklearn.cluster import KMeans, DBSCAN
 import seaborn as sns
 from datetime import datetime
+import ast
+from collections import Counter
+
+def load_cleaned_data():
+    """
+    Loads the cleaned data from the CSV file.
+    """
+    assert os.path.exists("data/cleaned_data.csv"), "The cleaned data file does not exist at './data/cleaned_data.csv'."
+    data = pd.read_csv("data/cleaned_data.csv")
+    data['release_date'] = pd.to_datetime(data['release_date'])
+    data['genres'] = data['genres'].apply(ast.literal_eval)
+    return data
 
 CorrelationResult = namedtuple(
     "CorrelationResult",
@@ -62,87 +69,26 @@ def is_significant(p_value, alpha=0.05):
     return significance
 
 
-def generate_correlation_plot(df: pd.DataFrame, corr_result, output_dir, hue=None):
+def plot_correlation(df: pd.DataFrame, column1: str, column2: str):
     """
-    Generates and saves hexbin plot given a DataFrame and a correlation result
-    derived from two columns in that DataFrame. Supports hue-based segmentation.
+    Given a DataFrame and two column names, this function plots a scatter plot of the two columns.
     """
-    print(
-        f"Generating correlation plot for {corr_result.Column1} vs {corr_result.Column2}"
+ 
+    sns.regplot(
+        x=df[column1], y=df[column2]
     )
-
-    fig, ax = plt.subplots(figsize=(7, 5))
-
-    if hue is not None:
-        hue_values = df[hue].unique()  # Get unique hue categories
-        colors = plt.cm.get_cmap(
-            "tab10", len(hue_values)
-        )  # Generate a colormap with distinct colors
-
-        for i, val in enumerate(hue_values):
-            subset = df[df[hue] == val]  # Filter dataset by hue category
-
-            # Generate hexbin plot for each hue category
-            hb = ax.hexbin(
-                subset[corr_result.Column1],
-                subset[corr_result.Column2],
-                gridsize=30,
-                mincnt=1,
-                alpha=0.5,
-                edgecolors="none",
-            )
-
-            # Compute cluster center and standard deviation
-            center_x = subset[corr_result.Column1].mean()
-            center_y = subset[corr_result.Column2].mean()
-            std_x = subset[corr_result.Column1].std()
-            std_y = subset[corr_result.Column2].std()
-
-            ax.errorbar(
-                center_x,
-                center_y,
-                xerr=std_x,
-                yerr=std_y,
-                fmt="o",
-                color=colors(i),
-                label=f"Cluster {val} Mean",
-            )
-
-        plt.colorbar(hb, ax=ax).set_label("Count in bin")
-        ax.legend()
-
-    else:
-        hb = ax.hexbin(
-            df[corr_result.Column1], df[corr_result.Column2], cmap="Blues", mincnt=1
-        )
-        plt.colorbar(hb, ax=ax).set_label("Count in bin")
-
-    ax.set_xlabel(corr_result.Column1)
-    ax.set_ylabel(corr_result.Column2)
-    ax.set_title(
-        f"{corr_result.Column1} vs. {corr_result.Column2} \n"
-        f"Corr: {corr_result.Correlation:.3f}, p: {corr_result.P_value:.3g} ({corr_result.Significance})"
-    )
-
-    # Ensure the output directory exists
-    os.makedirs(output_dir, exist_ok=True)
-
-    plt.savefig(
-        os.path.join(
-            output_dir, f"hexbin_{corr_result.Column1}_{corr_result.Column2}.png"
-        ),
-        dpi=200,
-        bbox_inches="tight",
-    )
-    plt.close()
+    plt.title(f"{column1} vs {column2}\n Correlation: {df[column1].corr(df[column2])}")
+    plt.xlabel(column1)
+    plt.ylabel(column2)
+    plt.show()
+   
 
 
-def report_correlations(
-    df: pd.DataFrame, ref_column: str, print_plots=False, hue=None
+def report_correlation(
+    df: pd.DataFrame, ref_column: str
 ) -> pd.DataFrame:
     """
-    Given a DataFrame, this function computes the correlation between the popularity and all other columns in the dataset.
-    It saves the correlation results in a CSV file and generates and saves hexbin plots for each correlation.
+    Given a DataFrame, this function computes the correlation between a ref_column and all other columns in the dataset.
     It returns the correlation results as a DataFrame.
     """
 
@@ -152,7 +98,6 @@ def report_correlations(
 
     for col in numeric_columns:
         if col != ref_column:  # Avoid self-correlation
-            print("Processing:", col)
             corr, p_value = compute_correlation(df, col, ref_column)
 
             if corr is not None:
@@ -166,84 +111,11 @@ def report_correlations(
     # Sort results by statistical significance (p-value)
     correlation_results.sort(key=lambda x: abs(x.Correlation), reverse=True)
 
-    # Save the correlation results to a CSV file
-    data_output_dir = setup_output_dir("eda_data")
+    # Save the correlation results to a DataFrame 
     correlation_df = pd.DataFrame(
         correlation_results, columns=CorrelationResult._fields
     )
-    correlation_df.to_csv(
-        os.path.join(data_output_dir, "correlation_results.csv"), index=False
-    )
-    print(f"Correlation results saved in {data_output_dir}/")
-
-    if print_plots:
-        # Plot and save hexbin
-        plot_dir = setup_output_dir("eda_plots/correlation_plots")
-        for corr_result in correlation_results:
-            generate_correlation_plot(df, corr_result, plot_dir, hue)
-        print(f"Plots saved in {plot_dir}/")
-
     return correlation_df
-
-
-def K_means_cluster(df: pd.DataFrame, column: str, K: int):
-    """
-    Performs a K-means clustering of a column in a provided DataFrame
-    """
-    if column not in df.columns:
-        raise ValueError(f"Column '{column}' not found in DataFrame")
-
-    kmeans = KMeans(n_clusters=K)
-    df[f"{column}_cluster"] = kmeans.fit_predict(df[[column]])
-
-    for cluster in range(K):
-        feature_cluster = df[column].where(df[f"{column}_cluster"] == cluster)
-        feature_cluster.plot(kind="kde")
-    plt.show()
-
-
-def cluster_data(df: pd.DataFrame, column: str) -> None:
-    """
-    Cluster data according to a give column in the dataframe.
-    Attempts to perform k-means clustering for each k value in K_range (low inclusive, high-non inclusive)
-    Saves a kde plot of the distribution to eda_plots
-    """
-    if column not in df.columns:
-        raise ValueError(f"{column} not found in DataFrame")
-
-    # Create output directories
-    plot_dir = setup_output_dir(f"eda_plots/{column}_clustering")
-    data_dir = setup_output_dir("eda_data")
-
-    # First, we will examine the distribution of the column using a kernel density plot
-    df[column].describe().to_csv(f"{data_dir}/{column}_stats.csv")
-    df[column].plot(kind="kde", title=f"{column} Distribution", legend=True)
-
-    # Next, we will segment the dataset int 10 clusters space out by 0.5 * standard deviation
-    mean_popularity = df[column].mean()
-    std_popularity = df[column].std()
-    df[f"{column}_cluster"] = pd.cut(
-        df[column],
-        bins=[
-            -float("inf"),
-            mean_popularity - 2 * std_popularity,
-            mean_popularity - 1.5 * std_popularity,
-            mean_popularity - 1 * std_popularity,
-            mean_popularity - 0.5 * std_popularity,
-            mean_popularity,
-            mean_popularity + 0.5 * std_popularity,
-            mean_popularity + 1 * std_popularity,
-            mean_popularity + 1.5 * std_popularity,
-            mean_popularity + 2 * std_popularity,
-            float("inf"),
-        ],
-        labels=range(1, 11),
-    )
-
-    # Plot the segmented datasets
-    sns.histplot(data=df, x=column, hue=f"{column}_cluster")
-    plt.show()
-    plt.savefig(f"{plot_dir}/{column}_distribution.png")
 
 
 def determine_null_counts(df):
@@ -256,27 +128,45 @@ def determine_null_counts(df):
     return null_proportions
 
 
-def get_genre(df: pd.DataFrame, genre: str):
+def get_genre_subset(df: pd.DataFrame, keyword: str):
     """
     Returns a DataFrame containing only the rows that contain the given genre.
     """
-    return df[df["genres"].str.contains(genre)]
+    return df[df["genres"].apply(lambda genre_list: any(keyword in genre for genre in genre_list))]
 
 
-def get_timeframe(df: pd.DataFrame, start_date: str, end_date: str):
+def get_timeframe_subset(df: pd.DataFrame, start_date: str, end_date: str):
     """
     Returns a DataFrame containing only the rows that fall within the given timeframe.
     """
-    # start_date = datetime.strptime(start_date, "%Y-%m-%d")
-    # end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    end_date = datetime.strptime(end_date, "%Y-%m-%d")
     return df[(df["release_date"] >= start_date) & (df["release_date"] <= end_date)]
 
+def list_all_genres(df : pd.DataFrame):
+    """
+    Returns a dict containing the frequency of each genre in the given DataFrame.
+    """
+    genres = Counter() 
+    for genre_list in df["genres"]:
+        genres.update(genre_list)
+    return dict(sorted(genres.items(), key=lambda x: x[1], reverse=True))
 
 if __name__ == "__main__":
-    data = pd.read_csv("data/cleaned_data.csv")
+    data = load_cleaned_data()
+    correlations = report_correlation(data, "popularity")
 
-    # Cluster data according to popularity and view the distribution of the popularity column
-    cluster_data(data, "popularity")
+    # Example examination of the correlation results
+    twenty_tens = get_timeframe_subset(data, "2010-01-01", "2019-12-31")
+    twenty_tens_correlations = report_correlation(twenty_tens, "popularity")
+    print("Twenty tens correlations")
+    print(twenty_tens_correlations)
+    plot_correlation(twenty_tens, "entropy_energy", "popularity")
 
-    # Generate correlation plots between popularity and other columns
-    report_correlations(data, "popularity", hue="popularity_cluster")
+    hip_hop_data = get_genre_subset(data, "hip hop")
+    hip_hop_correlations = report_correlation(hip_hop_data, "popularity")
+    print("Hip hop correlations")
+    print(hip_hop_correlations)
+    plot_correlation(hip_hop_data, "popularity", "danceability")
+
+

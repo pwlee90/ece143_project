@@ -8,6 +8,7 @@ Author: Henri Schulz
 
 import pandas as pd
 from functools import reduce
+import ast
 
 
 def merge_src_files() -> pd.DataFrame:
@@ -115,14 +116,8 @@ def format_genres(df: pd.DataFrame) -> pd.DataFrame:
         print("genres column not found in the DataFrame")
         return df
 
-    def genre_string_to_list(genre_string):
-        return [
-            genres.replace("'", "").replace("]", "").replace("[", "").strip()
-            for genres in genre_string.split(",")
-        ]
-
     df["genres"] = df["genres"].apply(
-        lambda genre_string: genre_string_to_list(genre_string)
+        lambda genre_string: ast.literal_eval(genre_string) if ast.literal_eval(genre_string) != [''] else []    
     )
     return df
 

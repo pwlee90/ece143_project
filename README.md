@@ -86,9 +86,34 @@ merged_data = DataProcessing.merge_src_files()
 
 ### Drop Unneccessary Columns
 
-From the merged DataFrame, we have identified the following data as irrelevant to determining the relationship between the raw audio of a song and its popularity:
+From the merged DataFrame, we have identified the following columns as irrelevant to determining the relationship between the raw audio of a song and its popularity:
 
-TODO: UPDATE
+"album_id",
+        "available_markets",
+        "country",
+        "type",
+        "mode",
+        "analysis_url",
+        "artists_id",
+        "disc_number",
+        "href",
+        "playlist",
+        "preview_url",
+        "track_href",
+        "track_name_prev",
+        "track_number",
+        "uri",
+        "artist_id",
+        "external_urls",
+        "href",
+        "album_id",
+        "images",
+        "track_name_prev",
+        "total_tracks",
+        "uri",
+        "artist_popularity",
+        "followers",
+        "artist_id".
 
 To execute this, run
 ```IPython
