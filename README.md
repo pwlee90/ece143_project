@@ -104,12 +104,6 @@ For our features, we will perform a PCA on features with the highest correlation
 
 ### Textual Analysis
 
-## Predictive Modeling
-
-### Linear Regression
-
-### Random Forest
-
 ### Evaluation and Comparison of Methods
 
 ## Summary of Results

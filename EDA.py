@@ -17,6 +17,7 @@ import os
 from collections import namedtuple
 from sklearn.cluster import KMeans, DBSCAN
 import seaborn as sns
+from datetime import datetime
 
 CorrelationResult = namedtuple(
     "CorrelationResult",
@@ -122,14 +123,12 @@ def generate_correlation_plot(df: pd.DataFrame, corr_result, output_dir, hue=Non
     plt.close()
 
 
-def report_correlations(df : pd.DataFrame, ref_column : str, hue=None) -> pd.DataFrame:
+def report_correlations(df : pd.DataFrame, ref_column : str, print_plots = False, hue=None) -> pd.DataFrame:
     """
     Given a DataFrame, this function computes the correlation between the popularity and all other columns in the dataset.
     It saves the correlation results in a CSV file and generates and saves hexbin plots for each correlation.
     It returns the correlation results as a DataFrame.
     """
-    # Load the combined data
-    df
 
     # Collect numerical correlation results
     numeric_columns = df.select_dtypes(include=["number"]).columns
@@ -163,11 +162,12 @@ def report_correlations(df : pd.DataFrame, ref_column : str, hue=None) -> pd.Dat
     )
     print(f"Correlation results saved in {data_output_dir}/")
 
-    # Plot and save hexbin
-    plot_dir = setup_output_dir("eda_plots/correlation_plots")
-    for corr_result in correlation_results:
-        generate_correlation_plot(df, corr_result, plot_dir, hue)
-    print(f"Plots saved in {plot_dir}/")
+    if print_plots:
+        # Plot and save hexbin
+        plot_dir = setup_output_dir("eda_plots/correlation_plots")
+        for corr_result in correlation_results:
+            generate_correlation_plot(df, corr_result, plot_dir, hue)
+        print(f"Plots saved in {plot_dir}/")
 
     return correlation_df
 
@@ -180,7 +180,7 @@ def K_means_cluster(df : pd.DataFrame, column : str, K:int):
     
     kmeans = KMeans(n_clusters=K)
     df[f'{column}_cluster'] = kmeans.fit_predict(df[[column]])
-       
+    
     for cluster in range(K):
         feature_cluster = df[column].where(df[f'{column}_cluster'] == cluster)
         feature_cluster.plot(kind='kde')
@@ -235,6 +235,20 @@ def determine_null_counts(df):
     null_proportions = df.isna().mean()
 
     return null_proportions
+
+def get_genre(df : pd.DataFrame, genre : str):
+    """
+    Returns a DataFrame containing only the rows that contain the given genre.
+    """
+    return df[df['genres'].str.contains(genre)]
+
+def get_timeframe(df : pd.DataFrame, start_date : str, end_date : str):
+    """
+    Returns a DataFrame containing only the rows that fall within the given timeframe.
+    """
+    # start_date = datetime.strptime(start_date, "%Y-%m-%d")
+    # end_date = datetime.strptime(end_date, "%Y-%m-%d")
+    return df[(df['release_date'] >= start_date) & (df['release_date'] <= end_date)]
         
 if __name__ == "__main__":
     data = pd.read_csv("data/cleaned_data.csv")
