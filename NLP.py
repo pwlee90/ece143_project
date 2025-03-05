@@ -4,5 +4,6 @@ extract new features from the lyrics.
 Specifically, we extract the following features:
 """
 
+
 def process_lyrics(lyrics):
     pass
