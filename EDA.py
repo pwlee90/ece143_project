@@ -15,9 +15,9 @@ import seaborn as sns
 from datetime import datetime
 import ast
 from collections import Counter
+import typing
 
-
-def load_cleaned_data():
+def load_cleaned_data() -> pd.DataFrame:
     """
     Loads the cleaned data from the CSV file.
     """
@@ -30,32 +30,7 @@ def load_cleaned_data():
     return data
 
 
-CorrelationResult = namedtuple(
-    "CorrelationResult",
-    ["Column1", "Column2", "Correlation", "P_value", "Significance"],
-)
-""" Named tuple to store correlation results between two columns. """
-
-
-def compute_correlation(df: pd.DataFrame, col1: str, col2: str):
-    """
-    Computes and returns the Pearson correlation coefficient and its p-value.
-    """
-    x = df[col1].dropna()
-    y = df[col2].dropna()
-
-    # Ensure both columns have the same length after dropping NaNs
-    common_idx = x.index.intersection(y.index)
-    x, y = x.loc[common_idx], y.loc[common_idx]
-
-    if len(x) > 1:  # Ensure we have at least two data points
-        corr, p_value = stats.pearsonr(x, y)
-        return corr, p_value
-    else:
-        return None, None  # Not enough data to compute correlation
-
-
-def setup_output_dir(output_dir):
+def setup_output_dir(output_dir : str) -> str:
     """
     Creates the output directory if it does not exist.
     Returns the output directory path.
@@ -63,73 +38,59 @@ def setup_output_dir(output_dir):
     os.makedirs(output_dir, exist_ok=True)
     return output_dir
 
-
-def is_significant(p_value, alpha=0.05):
-    """
-    Determines if the p-value is significant based on a given alpha threshold and returns a string,
-    either "Significant" or "Not Significant".
-    """
-    significance = "Significant" if p_value < alpha else "Not Significant"
-    return significance
-
-
-def plot_correlation(df: pd.DataFrame, column1: str, column2: str):
+def plot_correlation(df: pd.DataFrame, column1: str, column2: str) -> None:
     """
     Given a DataFrame and two column names, this function plots a scatter plot of the two columns.
     """
 
+    plt.figure()
     sns.regplot(
         x=df[column1],
         y=df[column2],
         scatter=False,
         line_kws={"color": "red"},
     )
+    plt.hexbin(
+        x=df[column1],
+        y=df[column2],
+        gridsize=50,
+        cmap="Blues",
+        alpha=0.8,
+    )
     sns.kdeplot(
         x=df[column1], 
-        y=df[column2], 
-        cmap="Blues", 
-        fill=True, 
-        alpha=0.6
+        y=df[column2],
+        cmap="Greys",
+        fill=False, 
+        alpha=0.4
     )
-    plt.title(f"{column1} vs {column2}\n Correlation: {df[column1].corr(df[column2])}")
+    plt.title(f"{column1} vs {column2}\n Pearson Correlation: {df[column1].corr(df[column2])}\n Spearman Correlation: {df[column1].corr(df[column2], method='spearman')}")
     plt.xlabel(column1)
     plt.ylabel(column2)
-    plt.show()
+    plt.show(block=False)
 
 
-def report_correlation(df: pd.DataFrame, ref_column: str) -> pd.DataFrame:
+import pandas as pd
+
+def report_correlation(df: pd.DataFrame, ref_column: str) -> tuple[pd.Series, pd.Series]:
     """
     Given a DataFrame, this function computes the correlation between a ref_column and all other columns in the dataset.
-    It returns the correlation results as a DataFrame.
+    It returns the correlation results as two Series: Pearson and Spearman correlations.
     """
 
-    # Collect numerical correlation results
+    # Extract numeric columns
     numeric_columns = df.select_dtypes(include=["number"]).columns
-    correlation_results = []
 
-    for col in numeric_columns:
-        if col != ref_column:  # Avoid self-correlation
-            corr, p_value = compute_correlation(df, col, ref_column)
+    # Compute Pearson correlation
+    pearson_correlation = df[numeric_columns].corrwith(df[ref_column]).drop(ref_column).abs().sort_values(ascending=False)
 
-            if corr is not None:
-                alpha = 0.05  # Significance level
-                significance = is_significant(p_value, alpha)
-                result = CorrelationResult(col, ref_column, corr, p_value, significance)
-                correlation_results.append(result)
-            else:
-                print(f"Insufficient data to compute correlation for column '{col}'")
+    # Compute Spearman correlation
+    spearman_correlation = df[numeric_columns].corrwith(df[ref_column], method="spearman").drop(ref_column).abs().sort_values(ascending=False)
 
-    # Sort results by statistical significance (p-value)
-    correlation_results.sort(key=lambda x: abs(x.Correlation), reverse=True)
-
-    # Save the correlation results to a DataFrame
-    correlation_df = pd.DataFrame(
-        correlation_results, columns=CorrelationResult._fields
-    )
-    return correlation_df
+    return pearson_correlation, spearman_correlation
 
 
-def determine_null_counts(df):
+def determine_null_counts(df : pd.DataFrame) -> pd.DataFrame:
     """
     Returns a DataFrame containing the proportion of null counts for each column in the given DataFrame.
     Saves the output as a CSV in the 'eda_data' directory with column names preserved.
@@ -139,7 +100,7 @@ def determine_null_counts(df):
     return null_proportions
 
 
-def get_genre_subset(df: pd.DataFrame, keyword: str):
+def get_genre_subset(df: pd.DataFrame, keyword: str) -> pd.DataFrame:
     """
     Returns a DataFrame containing only the rows that contain the given genre.
     """
@@ -150,7 +111,7 @@ def get_genre_subset(df: pd.DataFrame, keyword: str):
     ]
 
 
-def get_timeframe_subset(df: pd.DataFrame, start_date: str, end_date: str):
+def get_timeframe_subset(df: pd.DataFrame, start_date: str, end_date: str) -> pd.DataFrame:
     """
     Returns a DataFrame containing only the rows that fall within the given timeframe.
     """
@@ -159,7 +120,7 @@ def get_timeframe_subset(df: pd.DataFrame, start_date: str, end_date: str):
     return df[(df["release_date"] >= start_date) & (df["release_date"] <= end_date)]
 
 
-def list_all_genres(df: pd.DataFrame):
+def list_all_genres(df: pd.DataFrame) -> dict:
     """
     Returns a dict containing the frequency of each genre in the given DataFrame.
     """
@@ -171,17 +132,11 @@ def list_all_genres(df: pd.DataFrame):
 
 if __name__ == "__main__":
     data = load_cleaned_data()
-    correlations = report_correlation(data, "popularity")
 
-    # Example examination of the correlation results
-    twenty_tens = get_timeframe_subset(data, "2010-01-01", "2019-12-31")
-    twenty_tens_correlations = report_correlation(twenty_tens, "popularity")
-    print("Twenty tens correlations")
-    print(twenty_tens_correlations)
-    plot_correlation(twenty_tens, "entropy_energy", "popularity")
-
+    # Plot the top 5 correlations in hip hop
     hip_hop_data = get_genre_subset(data, "hip hop")
-    hip_hop_correlations = report_correlation(hip_hop_data, "popularity")
-    print("Hip hop correlations")
-    print(hip_hop_correlations)
-    plot_correlation(hip_hop_data, "popularity", "danceability")
+    pearson, spearman = report_correlation(hip_hop_data, "popularity")
+    for i in range(5):
+        plot_correlation(hip_hop_data, pearson.index[i], "popularity")
+        input("Press Enter to display the next plot...")
+
