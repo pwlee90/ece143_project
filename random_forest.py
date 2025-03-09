@@ -29,25 +29,30 @@ def run_random_forest(df : pd.DataFrame, features : List[str], target : str) -> 
     r2 = r2_score(y_test, y_pred)
     rmse = root_mean_squared_error(y_test, y_pred)
 
-    return model, rmse, r2
+    return model, rmse, r2, y_test, y_pred
 
 # Example usage
 if __name__ == "__main__":
     import EDA
     data = EDA.load_cleaned_data()
+    import ErrorAnalysis
 
-    # Example with all songs
-    print("All Songs")
-    pearson, spearman = EDA.report_correlation(data, "popularity")
+    # # Example with all songs
+    # print("All Songs")
+    # pearson, spearman = EDA.report_correlation(data, "popularity")
     
-    print("Selected Features:")
-    selected_features = spearman[:10]# Extract the top 10 features
-    print(selected_features)
+    # print("Selected Features:")
+    # selected_features = spearman[:10]# Extract the top 10 features
+    # print(selected_features)
     
-    model, rmse, r2  = run_random_forest(data, selected_features.index.tolist(), "popularity")
-    print(f"RMSE: {rmse}")
-    print(f"R2: {r2}")
-    print()
+    # model, rmse, r2, y_test, y_pred  = run_random_forest(data, selected_features.index.tolist(), "popularity")
+    # print(f"RMSE: {rmse}")
+    # print(f"R2: {r2}")
+    # print()
+
+    # ErrorAnalysis.plot_residuals(y_test, y_pred, "All Songs")
+    # ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "All Songs")
+
 
     # Example with hip hop songs
     print("Hip Hop Songs")
@@ -58,10 +63,14 @@ if __name__ == "__main__":
     print("Selected Features:")
     print(selected_features)
     
-    model, rmse, r2  = run_random_forest(hip_hop_songs, selected_features.index.tolist(), "popularity")
+    model, rmse, r2, y_test, y_pred  = run_random_forest(hip_hop_songs, selected_features.index.tolist(), "popularity")
     print(f"RMSE: {rmse}")
     print(f"R2: {r2}")
     print()
+    ErrorAnalysis.plot_residuals(y_test, y_pred, "All Songs")
+    ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "All Songs")
+
+
 
     # Example with pop songs
     print("Pop Songs")

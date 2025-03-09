@@ -38,6 +38,11 @@ def find_optimal_features(data, correlation_df, target):
         selected_features = correlation_df[:n_features].index.tolist()
         model, rmse, r2, accuracy = run_linear_regression(data, selected_features, target)
 
+        # print(f"No. of Features: {n_features}")
+        # print(f"RMSE: {rmse}")
+        # print(f"R2: {r2}")
+        # print(f"Accuracy: {accuracy}%")
+        # print()
         if rmse < min_rmse:
             min_rmse = rmse
             optimal_features = selected_features
@@ -49,6 +54,7 @@ def find_optimal_features(data, correlation_df, target):
             max_accuracy_rmse = rmse
 
     print(f"\nOptimal Number of Features for min RMSE: {len(optimal_features)}")
+    print(f"\nOptimal Features for min RMSE: {optimal_features}")
     print(f"Min RMSE: {min_rmse}")
     print(f"Accuracy for optimal RMSE: {min_rmse_accuracy}%")
 

@@ -41,11 +41,12 @@ if __name__ == "__main__":
     results_all = []
     results_hip_hop = []  
 
+    pearson, spearman = EDA.report_correlation(data, "popularity")
+
     for i in range(1, 11): 
       for j in range(2, 5): 
 
         print(f"All Songs: {i} features selected, {j} poly degree")
-        pearson, spearman = EDA.report_correlation(data, "popularity")
         selected_features = pearson[:i]  # Extract the top i features
         print("Selected Features:")
         print(selected_features)
