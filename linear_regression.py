@@ -18,13 +18,7 @@ def run_linear_regression(df : pd.DataFrame, features : List[str], target : str)
 
     y_pred = model.predict(X_test)
 
-    r2 = r2_score(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-
-    # Accuracy check within 5% tolerance
-    accuracy = np.mean(np.abs((y_test - y_pred) / y_test) <= 0.05) * 100
-
-    return model, rmse, r2, accuracy
+    return model, y_test, y_pred
 
 def find_optimal_features(data, correlation_df, target):
     min_rmse = float('inf')

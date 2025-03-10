@@ -27,16 +27,18 @@ def run_random_forest(df : pd.DataFrame, features : List[str], target : str) -> 
 
     y_pred = model.predict(X_test)
 
-    r2 = r2_score(y_test, y_pred)
-    rmse = root_mean_squared_error(y_test, y_pred)
-
-    return model, rmse, r2, y_test, y_pred
+    return model, y_test, y_pred
 
 # Example usage
 if __name__ == "__main__":
     import EDA
     data = EDA.load_cleaned_data()
     import ErrorAnalysis
+
+    hip_hop_data = EDA.get_genre_subset(data, "hip hop")
+    pearson, spearman = EDA.report_correlation(hip_hop_data, "popularity")
+    selected_features = spearman[:10].index.tolist()# Extract the top 10 features
+    model, y_test, y_pred = run_random_forest(hip_hop_data, selected_features, "popularity")
 
     # # Example with all songs
     # print("All Songs")

@@ -1,7 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-from sklearn.metrics import r2_score, root_mean_squared_error
+from sklearn.metrics import r2_score, root_mean_squared_error, mean_squared_error
 
 def compute_rmse(y_test: pd.Series, y_pred: pd.Series) -> float:
     """Compute the Root Mean Squared Error (RMSE) between the actual and predicted values."""
@@ -26,13 +26,36 @@ def plot_residuals(y_test: pd.Series, y_pred: pd.Series, title: str):
     plt.show()
 
 def plot_actual_vs_pred(y_test: pd.Series, y_pred: pd.Series, title: str):
-    """Plot actual vs. predicted values to assess prediction accuracy."""
-    plt.figure(figsize=(6, 6))
-    sns.scatterplot(x=y_test, y=y_pred, alpha=0.5)
-    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--')  # Perfect predictions line
-    plt.xlabel("Actual")
-    plt.ylabel("Predicted")
-    plt.title(f"Actual vs. Predicted: {title}")
+    """Plot actual vs. predicted values with additional statistical insights."""
+    
+    # Compute Standard Deviation of Errors
+    residuals = y_test - y_pred
+    std_dev = np.std(residuals)
+    
+    # Compute RMSE for display
+    rmse = root_mean_squared_error(y_test, y_pred)
+    
+    # Set style and figure size
+    sns.set_style("whitegrid")
+    plt.figure(figsize=(7, 7))
+
+    # Scatterplot of datapoints
+    sns.scatterplot(x=y_test, y=y_pred, alpha=0.6, color="mediumslateblue", edgecolor="black")
+
+    # Add perfect prediction reference
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], 'r--', label="Perfect Fit")
+
+    # Labels and Title
+    plt.xlabel("Actual Popularity", fontsize=12)
+    plt.ylabel("Predicted Popularity", fontsize=12)
+    plt.title(f"Actual vs. Predicted Popularity: {title}", fontsize=14, fontweight='bold')
+
+    # Display RMSE as annotation
+    plt.annotate(f"RMSE: {rmse:.2f}", 
+                 xy=(0.05, 0.9), xycoords='axes fraction', 
+                 fontsize=12, color='darkblue', fontweight='bold')
+
+    plt.legend()
     plt.show()
 
 def compute_accuracy_with_tolerance(y_test: pd.Series, y_pred: pd.Series, tolerance: float) -> float:
@@ -133,6 +156,14 @@ def analyze_predictions(y_test : pd.Series, y_pred : pd.Series, title : str) -> 
     compare_distributions(y_test, y_pred, title)
     plot_bland_altman(y_test, y_pred, 2)
     plot_residuals(y_test, y_pred, title)
+    plot_actual_vs_pred(y_test, y_pred, title)
+
+def generate_slide_graphics(y_test : pd.Series, y_pred : pd.Series, title : str) -> None:
+    """Generate graphics for the slides."""
+    rmse = compute_rmse(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    results = pd.DataFrame({"RMSE:": [rmse], "R2:": [r2]})
+    print(results)
     plot_actual_vs_pred(y_test, y_pred, title)
 
     

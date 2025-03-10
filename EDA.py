@@ -15,16 +15,16 @@ import seaborn as sns
 from datetime import datetime
 import ast
 from collections import Counter
-import typing
+from typing import List
 
 def load_cleaned_data() -> pd.DataFrame:
     """
     Loads the cleaned data from the CSV file.
     """
     assert os.path.exists(
-        "data/cleaned_data.csv"
-    ), "The cleaned data file does not exist at './data/cleaned_data.csv'."
-    data = pd.read_csv("data/cleaned_data.csv")
+        "data/cleaned_data_with_emotions.csv"
+    ), "The cleaned data file does not exist at './data/cleaned_data_with_emotions.csv'."
+    data = pd.read_csv("data/cleaned_data_with_emotions.csv")
     data["release_date"] = pd.to_datetime(data["release_date"])
     data["genres"] = data["genres"].apply(ast.literal_eval)
     return data
@@ -128,6 +128,35 @@ def list_all_genres(df: pd.DataFrame) -> dict:
     for genre_list in df["genres"]:
         genres.update(genre_list)
     return dict(sorted(genres.items(), key=lambda x: x[1], reverse=True))
+
+def plot_top_ten_features(correlation: pd.Series, correlation_name: str) -> List[str]:
+    """Plots the top 10 correlated features as a horizontal bar plot."""
+    assert len(correlation) >= 10, "The correlation Series must have at least 10 elements."
+
+    top_10_features = correlation.index[:10]
+
+    print(f"Top 10 Features for {correlation_name} Correlation:")
+    print(correlation[:10])
+
+    sns.set_style("whitegrid")
+    pastel_colors = sns.color_palette("pastel")
+
+    plt.figure(figsize=(8, 6))
+    ax = sns.barplot(y=top_10_features, x=correlation[:10], palette=pastel_colors)
+
+    plt.title(f'Top 10 Features for {correlation_name} Correlation', fontsize=14, fontweight='bold')
+    plt.xlabel(f'{correlation_name} Correlation', fontsize=12)
+    plt.ylabel("Features", fontsize=12)
+
+    # Add value labels inside bars
+    for p in ax.patches:
+        ax.annotate(f'{p.get_width():.2f}', 
+                    (p.get_width(), p.get_y() + p.get_height() / 2), 
+                    ha='left', va='center', fontsize=10, color='black')
+
+    plt.show()
+
+    return top_10_features.tolist()
 
 
 if __name__ == "__main__":

@@ -8,6 +8,14 @@ import numpy as np
 from sklearn.preprocessing import PolynomialFeatures
 
 def run_poly_regression(df : pd.DataFrame, features : List[str], target : str, d : int) -> Tuple[LinearRegression, float, float, float]:
+    """"
+    Runs a polynomial regression model on the given dataset and target variable.
+    Params:
+        df : pd.DataFrame - Training data
+        features : List[str] - List of features to train the model on
+        target : str - Target variable to predict
+        d : int - Degree of polynomial features
+    """
     df = df.dropna(subset=features + [target])
 
     X = df[features]
@@ -32,6 +40,22 @@ def run_poly_regression(df : pd.DataFrame, features : List[str], target : str, d
 
     return model, rmse, r2, accuracy, y_test, y_pred
 
+def find_optimal_poly_regression(df : pd.DataFrame, features : List[str], target : str):
+    """
+    Find the optimal polynomial regression model for the given dataset and target variable.
+    Params:
+        df : pd.DataFrame - Training data
+        features : List[str] - List of features to train the model on
+        target : str - Target variable to predict
+    """
+    optimal_results = ()
+    max_r2 = float('-inf')
+    for order in range(2, 6):
+        model, rmse, r2, accuracy, y_test, y_pred = run_poly_regression(df, features, target, order)
+        if r2 > max_r2:
+            optimal_results = (model, y_test, y_pred, order)
+            max_r2 = r2
+    return optimal_results
 
 # Example usage
 if __name__ == "__main__":
