@@ -1,6 +1,17 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
+from sklearn.metrics import r2_score, root_mean_squared_error
+
+def compute_rmse(y_test: pd.Series, y_pred: pd.Series) -> float:
+    """Compute the Root Mean Squared Error (RMSE) between the actual and predicted values."""
+    rmse = root_mean_squared_error(y_test, y_pred)
+    return rmse
+
+def compute_r2(y_test: pd.Series, y_pred: pd.Series) -> float:
+    """Compute the R2 score between the actual and predicted values."""
+    r2 = r2_score(y_test, y_pred)
+    return r2
 
 def plot_residuals(y_test: pd.Series, y_pred: pd.Series, title: str):
     """Plot residuals to visualize prediction errors."""
@@ -98,7 +109,30 @@ def plot_bland_altman(y_test: pd.Series, y_pred: pd.Series, num_std: float = 2):
 
     print(f"Limits of Agreement ({num_std} SD): [{lower_limit:.2f}, {upper_limit:.2f}]")
 
-def calc_smape(y_test: pd.Series, y_pred: pd.Series) -> float:
+def compute_smape(y_test: pd.Series, y_pred: pd.Series) -> float:
     """Calculate the Symmetric Mean Absolute Percentage Error (SMAPE) for two Series."""
     smape = np.mean(2 * np.abs(y_test - y_pred) / (np.abs(y_test) + np.abs(y_pred) + 1e-5)) * 100
     return smape
+
+def analyze_predictions(y_test : pd.Series, y_pred : pd.Series, title : str) -> None:
+    rmse = compute_rmse(y_test, y_pred)
+    r2 = r2_score(y_test, y_pred)
+    smape = compute_smape(y_test, y_pred)
+
+    print(f"RMSE: {rmse}")
+    print(f"R2: {r2}")
+    print("SMAPE: ", smape)
+    print()
+
+    accuracy = compute_accuracy_with_tolerance(y_test, y_pred, 0.05)
+    print(f"Using tolerance of 5%, accuracy is: {accuracy}%")
+
+    accuracy = compute_accuracy_with_std(y_test, y_pred, 1)
+    print(f"The percentage of residuals within 1 std devs of the mean of residuals is: {accuracy}%")
+
+    compare_distributions(y_test, y_pred, title)
+    plot_bland_altman(y_test, y_pred, 2)
+    plot_residuals(y_test, y_pred, title)
+    plot_actual_vs_pred(y_test, y_pred, title)
+
+    

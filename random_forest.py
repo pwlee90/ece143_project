@@ -76,26 +76,7 @@ if __name__ == "__main__":
     print(selected_features)
     
     model, rmse, r2, y_test, y_pred  = run_random_forest(hip_hop_songs, selected_features.index.tolist(), "popularity")
-    print(f"RMSE: {rmse}")
-    print(f"R2: {r2}")
-    print()
-
-    # Plot bland altman plot
-    ErrorAnalysis.compare_distributions(y_test, y_pred, "Hip Hop Songs")
-    ErrorAnalysis.plot_bland_altman(y_test, y_pred, 2)
-    ErrorAnalysis.plot_residuals(y_test, y_pred, "Hip Hop Songs")
-    ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "Hip Hop Songs")
-    
-    plt.show()
-    print("Using tolerance of 5%")
-    accuracy = ErrorAnalysis.compute_accuracy_with_tolerance(y_test, y_pred, 0.05)
-    print(f"Accuracy: {accuracy}%")
-
-    print ("Using 2 standard deviations")
-    accuracy = ErrorAnalysis.compute_accuracy_with_std(y_test, y_pred, 2)
-    print(f"Accuracy: {accuracy}%")
-
-    
+    ErrorAnalysis.analyze_predictions(y_test, y_pred, "Hip Hop Songs")
 
 
     # # Example with pop songs
