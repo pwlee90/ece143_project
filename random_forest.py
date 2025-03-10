@@ -1,4 +1,5 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from typing import List, Tuple
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.model_selection import train_test_split
@@ -50,8 +51,19 @@ if __name__ == "__main__":
     # print(f"R2: {r2}")
     # print()
 
+    # # Plot distribution of predictions
+    # plt.hist(y_test, bins=30, alpha=0.5, label='Actual Popularity Distribution')
+    # plt.show()
+
     # ErrorAnalysis.plot_residuals(y_test, y_pred, "All Songs")
     # ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "All Songs")
+    # print("Using tolerance of 5%")
+    # accuracy = ErrorAnalysis.compute_accuracy_with_tolerance(y_test, y_pred, 0.05)
+    # print(f"Accuracy: {accuracy}%")
+
+    # print ("Using 2 standard deviations")
+    # accuracy = ErrorAnalysis.compute_accuracy_with_std(y_test, y_pred, 2)
+    # print(f"Accuracy: {accuracy}%")
 
 
     # Example with hip hop songs
@@ -67,21 +79,36 @@ if __name__ == "__main__":
     print(f"RMSE: {rmse}")
     print(f"R2: {r2}")
     print()
-    ErrorAnalysis.plot_residuals(y_test, y_pred, "All Songs")
-    ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "All Songs")
+    plt.hist(y_test, bins=30, alpha=0.5, label='Actual Popularity Distribution')
+    plt.hold()
+    plt.hist(y_pred, bins=30, alpha=0.5, label='Predicted Popularity Distribution')
+    plt.title("Hip Hop Popularity Distribution")
+    plt.show()
 
+    ErrorAnalysis.plot_residuals(y_test, y_pred, "Hip Hop Songs")
+    ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "Hip Hop Songs")
+    plt.show()
+    print("Using tolerance of 5%")
+    accuracy = ErrorAnalysis.compute_accuracy_with_tolerance(y_test, y_pred, 0.05)
+    print(f"Accuracy: {accuracy}%")
 
+    print ("Using 2 standard deviations")
+    accuracy = ErrorAnalysis.compute_accuracy_with_std(y_test, y_pred, 2)
+    print(f"Accuracy: {accuracy}%")
 
-    # Example with pop songs
-    print("Pop Songs")
-    pop_songs = EDA.get_genre_subset(data, "pop")
-    pearson, spearman = EDA.report_correlation(pop_songs, "popularity")
     
-    selected_features = spearman[:10]# Extract the top 10 features
-    print("Selected Features:")
-    print(selected_features)
+
+
+    # # Example with pop songs
+    # print("Pop Songs")
+    # pop_songs = EDA.get_genre_subset(data, "pop")
+    # pearson, spearman = EDA.report_correlation(pop_songs, "popularity")
     
-    model, rmse, r2  = run_random_forest(pop_songs, selected_features.index.tolist(), "popularity")
-    print(f"RMSE: {rmse}")
-    print(f"R2: {r2}")
-    print()
+    # selected_features = spearman[:10]# Extract the top 10 features
+    # print("Selected Features:")
+    # print(selected_features)
+    
+    # model, rmse, r2  = run_random_forest(pop_songs, selected_features.index.tolist(), "popularity")
+    # print(f"RMSE: {rmse}")
+    # print(f"R2: {r2}")
+    # print()
