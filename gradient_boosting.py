@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import spearmanr
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error, r2_score
+from ErrorAnalysis import analyze_predictions
 
 df = pd.read_csv("cleaned_data_with_emotions.csv")
 
@@ -30,6 +31,7 @@ def train_and_evaluate_popularity_predictor(df, genre=None, top_n_features=20):
     Returns:
         model: The trained XGBoost model.
         X_test, y_test: The test set (for further evaluation if needed).
+        y_pred: The predicted values for the test set.
     """
     # If genre is specified, filter rows where the genres column contains the substring.
     if genre:
@@ -132,9 +134,11 @@ def train_and_evaluate_popularity_predictor(df, genre=None, top_n_features=20):
     plt.title("Actual vs. Predicted Popularity on Test Set")
     plt.show()
 
-    return model, X_test, y_test
+    return model, X_test, y_test, y_pred
 
 # Run the Predictor on the Entire Dataset or a Specific Genre
 # To run on the entire dataset, set genre=None.
 # To run on a specific genre (e.g., "hip hop"), provide that as the argument.
-trained_model, X_test, y_test = train_and_evaluate_popularity_predictor(df, genre="hip hop", top_n_features=20)
+trained_model, X_test, y_test, y_pred = train_and_evaluate_popularity_predictor(df, genre=None, top_n_features=20)
+
+analyze_predictions(y_test, y_pred, title="Hip Hop Popularity Prediction using XGBoost")
