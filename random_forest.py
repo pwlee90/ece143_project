@@ -79,14 +79,13 @@ if __name__ == "__main__":
     print(f"RMSE: {rmse}")
     print(f"R2: {r2}")
     print()
-    plt.hist(y_test, bins=30, alpha=0.5, label='Actual Popularity Distribution')
-    plt.hold()
-    plt.hist(y_pred, bins=30, alpha=0.5, label='Predicted Popularity Distribution')
-    plt.title("Hip Hop Popularity Distribution")
-    plt.show()
 
+    # Plot bland altman plot
+    ErrorAnalysis.compare_distributions(y_test, y_pred, "Hip Hop Songs")
+    ErrorAnalysis.plot_bland_altman(y_test, y_pred, 2)
     ErrorAnalysis.plot_residuals(y_test, y_pred, "Hip Hop Songs")
     ErrorAnalysis.plot_actual_vs_pred(y_test, y_pred, "Hip Hop Songs")
+    
     plt.show()
     print("Using tolerance of 5%")
     accuracy = ErrorAnalysis.compute_accuracy_with_tolerance(y_test, y_pred, 0.05)
