@@ -2,12 +2,13 @@
 This file is where we conducted our EDA. For our EDA, we load in the combined data file and
 then we calculate the correlation between the popularity and the other columns.
 
-Author: Henri Schulz
+Authors: Henri Schulz, Karl Hernandez
 """
 
 import pandas as pd
 import scipy.stats as stats
 import matplotlib.pyplot as plt
+import numpy as np
 import os
 from collections import namedtuple
 from sklearn.cluster import KMeans, DBSCAN
@@ -157,6 +158,83 @@ def plot_top_ten_features(correlation: pd.Series, correlation_name: str) -> List
     plt.show()
 
     return top_10_features.tolist()
+
+def generate_emotional_profile(df, title="Emotional Profile", genre=None):
+    """
+    Generates and displays an emotional profile visualization from song sentiment features.
+    
+    Parameters:
+        df (DataFrame): The dataframe containing song data with sentiment features
+        title (str): Title for the visualization
+        genre (str): Optional genre to filter by (None for all songs)
+        
+    Returns:
+        None (displays visualizations)
+    """
+    # Define the sentiment features to visualize
+    sentiment_features = [
+        'negative', 'disgust', 'fear', 'sadness', 'positive', 
+        'anger', 'trust', 'anticipation', 'joy', 'surprise'
+    ]
+
+    # Filter dataframe if needed
+    filtered_df = df.copy()
+    filter_description = []
+
+    if genre:
+        filtered_df = get_genre_subset(df, genre)
+        filter_description.append(f"Emotional Profile of {genre}")
+
+        
+    # Make sure we have all the needed features and data
+    available_features = [f for f in sentiment_features if f in filtered_df.columns]
+    if not available_features:
+        print("Error: No sentiment features found in the dataframe")
+        return
+        
+    if len(filtered_df) == 0:
+        print("Error: No songs match the specified filters")
+        return
+    
+    # Calculate average sentiment values
+    sentiment_means = filtered_df[available_features].mean().values
+    
+    # Set up the figure
+    fig = plt.figure(figsize=(12, 10))
+    
+    # Create the main radar chart
+    ax = fig.add_subplot(111, polar=True)
+    
+    # Set up angles for each feature
+    angles = np.linspace(0, 2*np.pi, len(available_features), endpoint=False).tolist()
+    
+    # Complete the loop for the radar chart
+    sentiment_means = np.append(sentiment_means, sentiment_means[0])
+    angles += angles[:1]
+    
+    # Plot radar chart
+    ax.plot(angles, sentiment_means, 'o-', linewidth=2, color='#3274A1')
+    ax.fill(angles, sentiment_means, alpha=0.25)
+    
+    # Set labels and styling
+    ax.set_xticks(angles[:-1])
+    ax.set_xticklabels(available_features, size=12)
+    ax.set_yticklabels([])
+    ax.grid(True)
+    
+    # Create descriptive title
+    if filter_description:
+        full_title = f"{title}\n({', '.join(filter_description)}, n={len(filtered_df)})"
+    else:
+        full_title = f"{title}\n(n={len(filtered_df)})"
+    
+    ax.set_title(full_title, size=16, pad=20, fontweight='bold')
+    
+    # Display the plot
+    plt.tight_layout()
+    plt.show()
+    
+    return
 
 
 if __name__ == "__main__":
