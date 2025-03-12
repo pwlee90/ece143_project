@@ -71,8 +71,6 @@ def plot_correlation(df: pd.DataFrame, column1: str, column2: str) -> None:
     plt.show(block=False)
 
 
-import pandas as pd
-
 def report_correlation(df: pd.DataFrame, ref_column: str) -> tuple[pd.Series, pd.Series]:
     """
     Given a DataFrame, this function computes the correlation between a ref_column and all other columns in the dataset.
@@ -143,7 +141,7 @@ def plot_top_ten_features(correlation: pd.Series, correlation_name: str) -> List
     pastel_colors = sns.color_palette("pastel")
 
     plt.figure(figsize=(8, 6))
-    ax = sns.barplot(y=top_10_features, x=correlation[:10], palette=pastel_colors)
+    ax = sns.barplot(y=top_10_features, x=correlation[:10], hue=top_10_features, palette=pastel_colors, legend=False)
 
     plt.title(f'Top 10 Features for {correlation_name} Correlation', fontsize=14, fontweight='bold')
     plt.xlabel(f'{correlation_name} Correlation', fontsize=12)
