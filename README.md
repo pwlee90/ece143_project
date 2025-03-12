@@ -1,5 +1,4 @@
 # ECE 143 Group Project - Music Popularity Prediction
----
 
 ## Problem Statement
 
@@ -15,7 +14,7 @@ To install all necessary packages, run
 python -m pip install -r requirements.txt
 ```
 
-**We are using the following 3rd part packages:**
+**We are using the following 3rd party packages:**
 - Jupyter
 - Numpy
 - Pandas
@@ -32,6 +31,30 @@ python -m IPython
 ```
 
 Due to Github file size limits, we recommend downloading the dataset's CSV files locally and adding them to .gitignore.
+
+## Project Structure
+
+- ece143 project root
+    - README.md
+    - requirements.txt
+    - data
+        - low_level_audio_features.csv
+        - lyrics_features.csv
+        - spotify_albums.csv
+        - spotify_artists.csv
+        - spotify_tracks.csv
+        - cleaned_data.csv (generated via user code)
+        - cleaned_data_with_emotions.csv (generate via user code)
+    - DataProcessing.py
+    - NLP.py
+    - EDA.py
+    - linear_regression.py
+    - polynomial_regression.py
+    - random_forest.py
+    - gradient_boosting.py
+    - ErrorAnalysis.py
+    - DataVisualizations.ipynb
+    - Project_Presentation_Slides.pdf
 
 ## Dataset Selection
 
@@ -55,31 +78,7 @@ Due to Github file size limits, we recommend downloading the dataset's CSV files
         - Loudness
         - etc.
 
-**Note:** This dataset can be downloaded from [SpotGenTrack](https://data.mendeley.com/datasets/4m2x4zngny/1) and should be placed in the following directory structure:
-
-### Project Structure
-
-- ece143 project root
-    - README.md
-    - requirements.txt
-    - data
-        - low_level_audio_features.csv
-        - lyrics_features.csv
-        - spotify_albums.csv
-        - spotify_artists.csv
-        - spotify_tracks.csv
-        - cleaned_data.csv (generated via user code)
-        - cleaned_data_with_emotions.csv (generate via user code)
-    - DataProcessing.py
-    - NLP.py
-    - EDA.py
-    - linear_regression.py
-    - polynomial_regression.py
-    - random_forest.py
-    - gradient_boosting.py
-    - ErrorAnalysis.py
-    - DataVisualizations.ipynb
-    - Project_Presentation_Slides.pdf
+**Note:** This dataset can be downloaded from [SpotGenTrack](https://data.mendeley.com/datasets/4m2x4zngny/1) and should be placed in the above directory structure.
 
 ## Data Processing
 
@@ -156,10 +155,10 @@ cleaned_data = DataProcessing.format_genres(cleaned_data)
 
 ## NLP Lyric Feature Engineering
 
-We extracted additonal sentiment-based features from the lyrics of the songs. Our process for doingn so can be seen in NLP.py, which outputs a new csv file `cleaned_data_with_emotions.csv` which can be found in the above directory structure.
+We extracted additonal sentiment-based features from the lyrics of the songs. Our process for doing so can be seen in NLP.py, which outputs a new csv file `cleaned_data_with_emotions.csv` which can be found in the above directory structure.
 
 ## Exploratory Data Analysis (EDA)
 
-Our (EDA.py)[EDA.py] serves as a reusable module for common EDA functions, including computing correlation scores, plotting correlations, and clustering by genres and timeframes. 
+Our [EDA.py](EDA.py) serves as a reusable module for common EDA functions, including computing correlation scores, plotting correlations, and clustering by genres and timeframes. 
 
 While most of our work was done in the IPython command-line interpreter, the main of EDA.py serves as an example of a potential usage of some of the module's functions.
