@@ -39,6 +39,7 @@ Due to Github file size limits, we recommend downloading the dataset's CSV files
 - ece143 project root
     - README.md
     - requirements.txt
+    - .gitignore
     - data
         - low_level_audio_features.csv
         - lyrics_features.csv
@@ -157,10 +158,31 @@ cleaned_data = DataProcessing.format_genres(cleaned_data)
 
 ## NLP Lyric Feature Engineering
 
-We extracted additonal sentiment-based features from the lyrics of the songs. Our process for doing so can be seen in NLP.py, which outputs a new csv file `cleaned_data_with_emotions.csv` which can be found in the above directory structure.
+We extracted additonal sentiment-based features from the lyrics of the songs. Our process for doing so can be seen in [NLP.py](NLP.py), which outputs a new csv file `cleaned_data_with_emotions.csv` which can be found in the above directory structure.
 
 ## Exploratory Data Analysis (EDA)
 
 Our [EDA.py](EDA.py) serves as a reusable module for common EDA functions, including computing correlation scores, plotting correlations, and clustering by genres and timeframes. 
 
 While most of our work was done in the IPython command-line interpreter, the main of EDA.py serves as an example of a potential usage of some of the module's functions.
+
+## Feature Selection and Validation
+
+We implemented 4 different ML models which we use to build predictors for popularity based off our most highly correlated features. 
+An example of running these models can be found in our [DataVisualizations](DataVisualizations.ipynb) notebook, which shows feature validiton using our highest-correlated features.
+
+The ML models can be found in the following files, which each contain a reusable function that can be used to train and predict a given model:
+- [linear_regression.py](linear_regression.py)
+- [polynomial_regression.py](polynomial_regression.py)
+- [random_forest.py](random_forest.py)
+- [gradient_boosting.py](gradient_boosting.py)
+
+We also created a generic toolset for performing common error analysis in [ErrorAnalysis.py](ErrorAnalysis.py), which we use to generate metrics and graphics showing model performance.
+
+## Summary of Results
+
+We were able to successfully identified the best features in the dataset for predicting popularity across all songs, and within specific genres.
+
+However, these features serve as poor predictors overall and as a result, **we cannot predict popularity based off solely audio and lyric features**.
+
+For further explanatiosn and demonstrations of our results, refer to our [project presentation](Project_Presentation_Slides.pdf) and our [data visualizations notebook](DataVisualizations.ipynb).
