@@ -1,8 +1,9 @@
-# ECE 143 Group Project
+# ECE 143 Group Project - Music Popularity Prediction
+---
 
 ## Problem Statement
 
-TODO
+**Is the popularity of songs predictable from just lyrical and audio features?**
 
 ## Environment Setup
 To setup your environment, create a new local venv of your choosing (we recommend Pip or Anaconda).
@@ -14,6 +15,17 @@ To install all necessary packages, run
 python -m pip install -r requirements.txt
 ```
 
+**We are using the following 3rd part packages:**
+- Jupyter
+- Numpy
+- Pandas
+- Scikit-Learn
+- Scipy
+- XGBoost
+- IPython
+- Seaborn
+- Matplotlib
+
 Our work is done from the command line using the IPython interpreter. To launch an instance of IPython, run:
 ```bash
 python -m IPython
@@ -24,44 +36,50 @@ Due to Github file size limits, we recommend downloading the dataset's CSV files
 ## Dataset Selection
 
 **[SpotGenTrack](https://data.mendeley.com/datasets/4m2x4zngny/1)**
-TODO Explain dataset selection
-
-*lyrics_features.csv*
-
-- 
-
-*spotify_albums.csv*
-
-- 
-
-*spotify_tracks.csv*
-
-- 
-
-*spotify_artists.csv*
-
--
-
-*low_level_audio_features.csv*
-
-- 
+- Repository of data for 109,393
+- Scraped from Spotify and Genius using public APIs
+- Highlighted features:
+    - Song name
+    - Song artist
+    - Song ID
+    - Low level audio features
+        - MEL
+        - Chroma
+        - MFCC
+        - Spectral decomposition metrics
+    - Lyrics
+    - Popularity score (1-100)
+    - Song duration (in ms)
+    - Descriptive statistics
+        - Danceability
+        - Loudness
+        - etc.
 
 **Note:** This dataset can be downloaded from [SpotGenTrack](https://data.mendeley.com/datasets/4m2x4zngny/1) and should be placed in the following directory structure:
 
+### Project Structure
+
 - ece143 project root
+    - README.md
+    - requirements.txt
     - data
         - low_level_audio_features.csv
         - lyrics_features.csv
         - spotify_albums.csv
         - spotify_artists.csv
         - spotify_tracks.csv
-    - README.md
-    - Source
-        - DataProcessing.py
-        - EDA.py
-        - etc.
+        - cleaned_data.csv (generated via user code)
+        - cleaned_data_with_emotions.csv (generate via user code)
+    - DataProcessing.py
+    - NLP.py
+    - EDA.py
+    - linear_regression.py
+    - polynomial_regression.py
+    - random_forest.py
+    - gradient_boosting.py
+    - ErrorAnalysis.py
     - DataVisualizations.ipynb
-    - requirements.txt
+    - Project_Presentation_Slides.pdf
 
 ## Data Processing
 
@@ -138,12 +156,10 @@ cleaned_data = DataProcessing.format_genres(cleaned_data)
 
 ## NLP Lyric Feature Engineering
 
-TODO
+We extracted additonal sentiment-based features from the lyrics of the songs. Our process for doingn so can be seen in NLP.py, which outputs a new csv file `cleaned_data_with_emotions.csv` which can be found in the above directory structure.
 
-## Explorartory Data Analysis
+## Exploratory Data Analysis (EDA)
 
-TODO
+Our (EDA.py)[EDA.py] serves as a reusable module for common EDA functions, including computing correlation scores, plotting correlations, and clustering by genres and timeframes. 
 
-## Feature Selection
-
-## Summary of Results
+While most of our work was done in the IPython command-line interpreter, the main of EDA.py serves as an example of a potential usage of some of the module's functions.
