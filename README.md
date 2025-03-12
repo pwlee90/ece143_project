@@ -1,4 +1,6 @@
-# ECE 143 Group Project - Music Popularity Prediction
+# ECE 143 Group 11 - Music Popularity Prediction
+Karl Hernandez, Peng Wei Lee, Karrmanya Pande, Henri Schulz, Yue Yu
+
 
 ## Problem Statement
 
